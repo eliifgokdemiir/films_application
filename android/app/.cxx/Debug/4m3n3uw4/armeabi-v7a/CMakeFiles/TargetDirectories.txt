@@ -1,0 +1,2 @@
+C:/Users/Flexy - Elif/Desktop/films_application/films_application/android/app/.cxx/Debug/4m3n3uw4/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/Flexy - Elif/Desktop/films_application/films_application/android/app/.cxx/Debug/4m3n3uw4/armeabi-v7a/CMakeFiles/rebuild_cache.dir

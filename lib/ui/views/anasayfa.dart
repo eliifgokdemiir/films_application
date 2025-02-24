@@ -1,6 +1,9 @@
 import 'package:films_application/data/entity/filmler.dart';
+import 'package:films_application/ui/cubit/anasayfa_cubit.dart';
 import 'package:films_application/ui/views/detay_sayfa.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:films_application/ui/widgets/custom_appbar.dart';
 
 class Anasayfa extends StatefulWidget {
   const Anasayfa({super.key});
@@ -10,87 +13,130 @@ class Anasayfa extends StatefulWidget {
 }
 
 class _AnasayfaState extends State<Anasayfa> {
-  Future<List<Filmler>> filmleriYukle() async {
-    var filmlerListesi = <Filmler>[];
-    var f1 = Filmler(id: 1, ad: "Gora", resim: "gora.jpg", fiyat: 10);
-    var f2 = Filmler(id: 2, ad: "Madmax", resim: "madmax.jpg", fiyat: 20);
-    var f3 = Filmler(id: 3, ad: "Matrix", resim: "matrix.webp", fiyat: 30);
-    var f4 =
-        Filmler(id: 4, ad: "Şimşek Mcqueen", resim: "mcqueen.jpg", fiyat: 40);
-    var f5 =
-        Filmler(id: 5, ad: "Oppenheimer", resim: "oppenheimer.jpg", fiyat: 50);
-    var f6 =
-        Filmler(id: 6, ad: "Alacakaranlık", resim: "yeniay.jpg", fiyat: 60);
-    filmlerListesi.add(f1);
-    filmlerListesi.add(f2);
-    filmlerListesi.add(f3);
-    filmlerListesi.add(f4);
-    filmlerListesi.add(f5);
-    filmlerListesi.add(f6);
-    return filmlerListesi;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    context.read<AnasayfaCubit>().filmleriYukle();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Filmler"),
-      ),
-      body: FutureBuilder<List<Filmler>>(
-        future: filmleriYukle(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            var filmlerListesi = snapshot.data;
-            return GridView.builder(
-              itemCount: filmlerListesi!.length,
+      appBar: const CustomAppBar(),
+      body: BlocBuilder<AnasayfaCubit, List<Filmler>>(
+        builder: (context, filmlerListesi) {
+          if (filmlerListesi.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GridView.builder(
+              itemCount: filmlerListesi.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, childAspectRatio: 1 / 1.8),
+                crossAxisCount: 2,
+                childAspectRatio: 0.7,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+              ),
               itemBuilder: (context, index) {
-                var film = filmlerListesi[index];
+                final film = filmlerListesi[index];
                 return GestureDetector(
                   onTap: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => DetaySayfa(film: film)));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DetaySayfa(film: film),
+                      ),
+                    );
                   },
                   child: Card(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Stack(
                       children: [
-                        SizedBox(
-                          width: 150,
-                          height: 200,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
                           child: Image.asset(
                             "resimler/${film.resim}",
                             fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
                             errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.broken_image),
+                                const Center(
+                                    child: Icon(Icons.movie, size: 50)),
                           ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text(
-                              "${film.fiyat} ₺",
-                              style: TextStyle(fontSize: 24),
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            gradient: const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Colors.black87],
                             ),
-                            ElevatedButton(
-                                onPressed: () {
-                                  print("${film.ad} sepete eklendi");
-                                },
-                                child: Text("Sepete Ekle"))
-                          ],
-                        )
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                film.ad,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    "${film.fiyat} ₺",
+                                    style: const TextStyle(
+                                      color: Colors.amber,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  ElevatedButton.icon(
+                                    icon: const Icon(Icons.shopping_cart,
+                                        size: 16, color: Colors.white),
+                                    label: const Text(
+                                      "Ekle",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.deepPurple,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      print("${film.ad} sepete eklendi");
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 );
               },
-            );
-          } else {
-            return const Center();
-          }
+            ),
+          );
         },
       ),
     );
